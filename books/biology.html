@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Critical for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Lazy Dev Notes</title>
-    <!-- 1. THE INGREDIENTS: Import the marked.js library -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        /* --- VISUALS (Same GitHub Dark Mode vibes) --- */
         :root {
             --bg-canvas: #0d1117;
             --text-main: #c9d1d9;
@@ -19,253 +17,131 @@
             --btn-bg: #21262d;
             --btn-hover: #30363d;
         }
-
-        body {
-            margin: 0;
-            background: var(--bg-canvas);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden; /* Let the separate panels scroll */
-        }
-
-        /* --- LEFT SIDE (Navigation) --- */
-        #toc-panel {
-            min-width: 250px;
-            max-width: 250px;
-            border-right: 1px solid var(--border);
-            overflow-y: auto;
-            padding: 20px;
-            background: var(--bg-canvas); /* Ensure bg is opaque for slide-over */
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-        }
-        
+        body { margin: 0; background: var(--bg-canvas); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        #toc-panel { min-width: 250px; max-width: 250px; border-right: 1px solid var(--border); overflow-y: auto; padding: 20px; background: var(--bg-canvas); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
         #toc-panel h3 { color: var(--text-muted); font-size: 0.9em; text-transform: uppercase; margin-top: 0; }
         #toc-list { list-style: none; padding: 0; }
-        #toc-list a {
-            display: block;
-            text-decoration: none;
-            color: var(--text-main);
-            padding: 8px 10px; /* Larger touch target */
-            font-size: 0.9em;
-            border-radius: 4px;
-            margin-bottom: 2px;
-        }
+        #toc-list a { display: block; text-decoration: none; color: var(--text-main); padding: 8px 10px; font-size: 0.9em; border-radius: 4px; margin-bottom: 2px; }
         #toc-list a:hover { background: var(--code-bg); color: var(--blue-link); }
         .indent-h3 { margin-left: 15px; font-size: 0.85em; opacity: 0.8; }
-
-        /* --- RIGHT SIDE (Content) --- */
-        #render-target {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 40px 80px;
-            max-width: 1000px;
-            scroll-behavior: smooth;
-        }
-
-        /* --- MOBILE ELEMENTS (Hidden on Desktop) --- */
+        #render-target { flex-grow: 1; overflow-y: auto; padding: 40px 80px; max-width: 1000px; scroll-behavior: smooth; }
         #mobile-menu-btn { display: none; }
         #menu-backdrop { display: none; }
-
-        /* --- MARKDOWN STYLING --- */
         h1, h2 { border-bottom: 1px solid var(--border); padding-bottom: 0.3em; margin-top: 1.5em; }
         h1:first-child { margin-top: 0; }
         a { color: var(--blue-link); text-decoration: none; }
         blockquote { border-left: 4px solid var(--border); padding-left: 1em; color: var(--text-muted); }
         pre { background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; }
         code { font-family: monospace; background: rgba(110,118,129,0.4); padding: 3px 6px; border-radius: 4px; }
-        pre code { background: transparent; padding: 0; }
         img { max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 6px; }
-
-        /* Scrollbar aesthetics */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
-        
-        /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
-            /* 1. Reset Body Layout */
-            body { 
-                flex-direction: column; 
-                overflow: hidden; /* Prevent body scroll, only target scrolls */
-            }
-
-            /* 2. Slide-out Navigation */
-            #toc-panel {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                width: 80%; /* Takes up 80% of screen width */
-                max-width: 300px;
-                transform: translateX(-100%); /* Hidden by default */
-                border-right: 1px solid var(--border);
-                box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            }
-            
-            #toc-panel.active {
-                transform: translateX(0); /* Slide in */
-            }
-
-            /* 3. Main Content Full Width */
-            #render-target { 
-                padding: 20px; 
-                width: 100%;
-                font-size: 16px; /* Prevent zooming on input focus */
-            }
-
-            /* 4. The Hamburger Button */
-            #mobile-menu-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background: var(--blue-link);
-                color: white;
-                border: none;
-                font-size: 24px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                z-index: 1001;
-                cursor: pointer;
-                transition: transform 0.2s;
-            }
+            body { flex-direction: column; overflow: hidden; }
+            #toc-panel { position: fixed; top: 0; left: 0; height: 100vh; width: 80%; max-width: 300px; transform: translateX(-100%); border-right: 1px solid var(--border); box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+            #toc-panel.active { transform: translateX(0); }
+            #render-target { padding: 20px; width: 100%; font-size: 16px; }
+            #mobile-menu-btn { display: flex; align-items: center; justify-content: center; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--blue-link); color: white; border: none; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1001; cursor: pointer; transition: transform 0.2s; }
             #mobile-menu-btn:active { transform: scale(0.95); }
-
-            /* 5. Backdrop Overlay */
-            #menu-backdrop {
-                display: block;
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.6);
-                z-index: 999;
-                opacity: 0;
-                pointer-events: none; /* Let clicks pass through when hidden */
-                transition: opacity 0.3s;
-            }
-            #menu-backdrop.active {
-                opacity: 1;
-                pointer-events: auto;
-            }
+            #menu-backdrop { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+            #menu-backdrop.active { opacity: 1; pointer-events: auto; }
         }
     </style>
 </head>
 <body>
-
-    <!-- MOBILE UI ELEMENTS -->
     <div id="menu-backdrop"></div>
     <button id="mobile-menu-btn">☰</button>
-
-    <!-- NAV PANEL -->
     <nav id="toc-panel">
         <h3>Contents</h3>
         <ul id="toc-list"></ul>
     </nav>
+    <main id="render-target"></main>
 
-    <!-- CONTENT PANEL -->
-    <main id="render-target">
-        <!-- JS will dump the cooked HTML here -->
-    </main>
+    <script type="text/markdown" id="raw-markdown">
+# Unit 1: The Building Blocks (Bio Basics)
 
-    <!-- 
-      2. THE RAW MEAT: Write your content inside this script tag.
-    -->
-<script type="text/markdown" id="raw-markdown">
-# Biology for Engineers: Course Summary
+### Why Engineers Need Biology?
+Basically, the 21st century is the "Century of Biology."
+* **The Gist:** Engineers used to just build bridges and circuits. Now, we need to build artificial organs and software that reads DNA.
+* **Biomimetics (Copy-pasting Nature):** Nature has been R&D-ing solutions for millions of years. Engineers just copy the homework.
+    * *Example:* The **Shinkansen (Bullet Train)** was too loud (sonic boom). The engineer saw a **Kingfisher** dive into water without splashing. He redesigned the train nose like the bird's beak. Boom gone. Speed up 10%.
+    * *Example:* **Owls** fly silently. We copied their feathers to make train parts quieter.
 
-## Unit 1: Foundations of Biology
+### The Cell: The Factory Floor
+The cell is the smallest unit of life. Think of it like a factory.
 
-### 1. Why Biology for Engineers?
-[cite_start]The 21st century is known as the "Century of Biology"[cite: 12]. Just as physics and chemistry drove previous industrial revolutions, biology is now central to technological advancement. [cite_start]Engineers need to understand biological systems to design technologies like artificial organs, genetic analysis software, and biomedical devices[cite: 13, 19].
+**1. Prokaryotes (The Startup Open Office)**
+* **Bacteria & Archaea.**
+* **No Boss's Office:** No nucleus. The DNA (blueprints) just floats around in a messy pile called the Nucleoid.
+* **Simple:** No fancy machines (membrane-bound organelles).
+* **Tiny:** 0.1 - 0.5 microns.
 
-**Biomimetics (Copying Nature):**
-Engineers copy nature to solve human problems. A classic example is the **Shinkansen (Bullet Train)**:
-* [cite_start]**Problem:** The train created a loud "sonic boom" when exiting tunnels[cite: 27].
-* [cite_start]**Solution:** The nose was redesigned to mimic a **Kingfisher’s beak** (which dives into water without splashing), and the pantograph was modeled after **Owl feathers** (silent flight)[cite: 28, 30, 32].
-* [cite_start]**Result:** Quieter, 10% faster, and 15% more energy-efficient[cite: 33].
+**2. Eukaryotes (The Corporate HQ)**
+* **Plants & Animals.**
+* **The Boss's Office:** Has a **Nucleus** where DNA is safely locked away.
+* **Departments:** Has fancy machines (Mitochondria, Golgi, etc.).
+* **Big:** 10 - 100 microns.
 
-### 2. The Cell: Basic Unit of Life
-[cite_start]The cell is the smallest functional unit of life[cite: 352]. Cells are broadly classified into two types:
+### Key Machinery (Organelles)
+* **Nucleus:** The CEO. Holds the Master Plan (DNA).
+* **Mitochondria:** The Power Plant. Burns food to make **ATP** (energy cash).
+* **Ribosomes:** The Workers. They read instructions and build Proteins.
+* **Cell Membrane:** The Security Gate. Decides who comes in and who goes out.
 
-| Feature | Prokaryotic Cells (Bacteria, Archaea) | Eukaryotic Cells (Plants, Animals, Fungi) |
-| :--- | :--- | :--- |
-| **Nucleus** | [cite_start]Absent (DNA in Nucleoid) [cite: 499] | [cite_start]Present (True Nucleus) [cite: 558] |
-| **Organelles** | [cite_start]Lacks membrane-bound organelles [cite: 507] | [cite_start]Contains organelles (Mitochondria, Lysosomes, etc.) [cite: 463] |
-| **Ribosomes** | [cite_start]Smaller (70S) [cite: 532] | [cite_start]Larger (80S) [cite: 587] |
-| **Reproduction** | [cite_start]Asexual (Binary Fission) [cite: 513] | [cite_start]Sexual and Asexual (Mitosis/Meiosis) [cite: 563] |
-| **Size** | [cite_start]0.1–0.5 µm [cite: 503] | [cite_start]10–100 µm [cite: 566] |
-
-
-**Key Organelles:**
-* [cite_start]**Nucleus:** Control center, stores DNA[cite: 405].
-* [cite_start]**Mitochondria:** "Powerhouse of the cell," generates ATP energy[cite: 412].
-* [cite_start]**Ribosomes:** Sites of protein synthesis[cite: 416].
-* [cite_start]**Cell Membrane:** Controls movement of substances in/out[cite: 388].
-
-### 3. Biomolecules
-[cite_start]Living organisms rely on four major macromolecules[cite: 676]:
-1.  **Carbohydrates:** Primary energy source ($C_n(H_2O)_n$). [cite_start]Broken down into glucose for ATP[cite: 681, 697].
-2.  **Proteins:** Made of amino acids. [cite_start]Functions include catalysis (**Enzymes**), transport (**Hemoglobin**), and structure (**Collagen**)[cite: 922, 926, 936, 939].
-3.  [cite_start]**Nucleic Acids (DNA & RNA):** Store and transfer genetic information[cite: 889].
-4.  [cite_start]**Lipids:** Fats/oils used for energy storage, insulation, and cell membranes[cite: 953, 956].
+### The Molecules (The Raw Materials)
+* **Carbs:** Fuel. Glucose is the gas for the car.
+* **Proteins:** The structural beams and the workers (Enzymes).
+* **Lipids:** Fats. Used for walls (membranes) and long-term energy storage (the pantry).
+* **Nucleic Acids (DNA/RNA):** The hard drive. Stores all the code.
 
 ---
 
-## Unit 2: Bio-Inspired Engineering (Biomimetics)
+# Unit 2: Stealing Ideas from Nature (Biomimetics)
 
-Engineers analyze biological systems to create efficient designs.
+Engineers look at animals and say, "I can build that, but with metal."
 
-### 1. Construction and Climate Control
-* [cite_start]**Composites:** Nature uses composites like **bone** (collagen + mineral) and **wood** (cellulose + lignin) for strength and flexibility[cite: 1054, 1061]. [cite_start]Engineers mimic this with Fiber-Reinforced Concrete (FRC)[cite: 1087].
-* [cite_start]**Self-Healing Materials:** Inspired by bone healing, engineers create concrete with microcapsules or bacteria that release calcium carbonate to seal cracks automatically[cite: 1114, 1133].
-* [cite_start]**Termite Mound Architecture:** Termite mounds maintain stable internal temperatures despite outside heat using passive ventilation (chimneys and porous walls)[cite: 1266, 1340].
-    * [cite_start]*Application:* The **Eastgate Centre in Zimbabwe** mimics this, using 90% less energy for cooling[cite: 1355].
+### 1. Construction & Composites
+* **Nature's Concrete:** Bone and Wood are "composites" (mix of two things). Bone is Collagen (soft) + Minerals (hard).
+* **Self-Healing Concrete:** Concrete cracks. We added bacteria that "wake up" when water hits a crack and poop out limestone to seal it. It's like a road that patches itself.
+* **Termite Mounds (The AC Hack):** Termites build giant mounds that stay cool even in 40°C heat.
+    * *How:* Passive ventilation chimneys. Hot air rises, sucks cool air in.
+    * *The Steal:* The **Eastgate Centre in Zimbabwe** copied this. It uses 90% less energy for AC.
 
+### 2. Fluid Dynamics (Water & Air)
+* **Penguin Feet (Heat Exchangers):** Penguins stand on ice but don't freeze.
+    * *The Trick:* Warm blood going down warms up the cold blood coming back up *before* it hits the body. It's a "Counter-Current Heat Exchanger."
+    * *Engineering:* We use this in car radiators and chemical plants.
+* **Submarines (Fake Fish):**
+    * **Shape:** Tapered like a whale (Fusiform) to cut through water (reduce drag).
+    * **Ballast Tanks:** Fish have a "Swim Bladder" (air balloon). Fill it to float, empty it to sink. Submarines do the exact same thing with water tanks.
 
-### 2. Thermal and Fluid Dynamics
-* [cite_start]**Counter-Current Heat Exchangers:** In animals like penguins, warm blood flowing to feet transfers heat to cold blood returning to the body, preventing heat loss[cite: 1416].
-    * [cite_start]*Application:* Used in car radiators and industrial chemical plants to maximize energy efficiency[cite: 1429].
-* **Submarines:**
-    * [cite_start]**Hull Shape:** Modeled after fusiform (tapered) shapes of fish/whales to reduce drag[cite: 1627].
-    * [cite_start]**Buoyancy:** Submarine **ballast tanks** mimic the fish **swim bladder** (filling with water to sink, air to rise)[cite: 1631, 1632].
-
-### 3. Flight and Navigation
-* [cite_start]**Airplanes:** Inspired by bird wings (airfoils) for lift and hollow bones for lightweight structures[cite: 1455].
-* [cite_start]**Helicopters:** Rotor blades mimic the spinning wing motion and hovering capabilities of insects and hummingbirds[cite: 1535].
-* **SONAR (Sound Navigation and Ranging):** Based on **echolocation** in bats (air) and dolphins (water). [cite_start]They emit sound waves and interpret echoes to sense distance and objects[cite: 1805, 1810].
-
+### 3. Flight & Sonar
+* **Planes:** Modeled on bird wings (airfoils) to generate lift (Bernoulli's principle).
+* **Helicopters:** Basically a giant spinning insect wing or a maple seed falling.
+* **Sonar:** Bats and Dolphins yell and listen to the echo to see in the dark. We put this on subs to find enemies and fish.
 
 ---
 
-## Unit 3: Real-Life Scenarios & Applications
+# Unit 3: Applied Tech (Saving the World)
 
-### 1. Environmental Engineering
-Biological engineers address global challenges:
-* [cite_start]**Climate Change:** Developing renewable energy (bioenergy) to reduce greenhouse gases ($CO_2$, $CH_4$)[cite: 1922, 1924].
-* [cite_start]**Waste Management:** Creating biodegradable materials and recycling systems to handle plastics and e-waste[cite: 1937].
-* [cite_start]**Water Scarcity:** Technologies for rainwater harvesting and desalination[cite: 1941].
+### 1. Environment (Cleaning up the mess)
+* **Climate Change:** We emitted too much CO2. Engineers are making bio-energy (fuel from plants) to fix it.
+* **Waste:** Making plastic that actually rots (biodegradable) and microbes that eat trash.
+* **Water:** Desalination (turning ocean water into drinking water) because we are running out of the fresh stuff.
 
-### 2. Agricultural Technology
-* [cite_start]**Biotechnology:** Creating **Genetically Modified Organisms (GMOs)** for pest resistance and higher yield[cite: 1953].
-* [cite_start]**Precision Agriculture:** Using IoT sensors and drones to monitor soil health and optimize fertilizer use[cite: 1984].
-* [cite_start]**Bio-fertilizers:** Replacing chemicals with natural microorganisms to maintain soil health[cite: 1982].
+### 2. Agriculture (Farming 2.0)
+* **GMOs:** Hacking plant DNA to make them bug-proof and drought-proof.
+* **Precision Farming:** Using drones and IoT sensors to water only the thirsty plants.
+* **Bio-fertilizers:** Using good bacteria instead of harsh chemicals to help plants grow.
 
-### 3. Medical Technology
-* [cite_start]**Biomedical Engineering:** Design of MRI/CT scanners and artificial organs (kidneys, hearts)[cite: 1995, 2008].
-* [cite_start]**Regenerative Medicine:** Using stem cells and tissue engineering to repair damaged organs[cite: 2013].
-* [cite_start]**Bio-Sensors:** Devices like "E-tongues" or wearable sensors (e.g., glucose monitors) that track health parameters in real-time[cite: 1891, 1892].
-* [cite_start]**Prosthetics:** Robotic limbs inspired by musculoskeletal mechanics[cite: 1907].
-</script>
+### 3. Medical Tech (Robo-Docs)
+* **Biomedical Engineering:** MRI and CT scanners (looking inside without cutting).
+* **Regenerative Medicine:** Using **Stem Cells** to grow new tissues. "Oh, you broke your liver? Here, grow a new one."
+* **Biosensors:** Wearable tech (like glucose monitors) that tracks your health 24/7.
+* **Prosthetics:** Robot arms that move like real muscles.
+    </script>
 
     <script>
-        // --- 3. THE CHEF (Logic) ---
-        
-        // Grab the raw ingredients
         const rawText = document.getElementById('raw-markdown').textContent;
         const target = document.getElementById('render-target');
         const tocList = document.getElementById('toc-list');
@@ -273,63 +149,38 @@ Biological engineers address global challenges:
         const backdrop = document.getElementById('menu-backdrop');
         const menuBtn = document.getElementById('mobile-menu-btn');
 
-        // Cook the markdown into HTML using the library
         target.innerHTML = marked.parse(rawText);
 
-        // --- THE SPICY SAUCE (Auto-ToC) ---
-        // Now that HTML exists, let's hunt for headers
         const headers = target.querySelectorAll('h1, h2, h3');
-
         headers.forEach((header, i) => {
-            // Give the header a nametag (ID) so we can jump to it
-            const safeId = header.textContent
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-') 
-                .replace(/(^-|-$)/g, '');
-            
+            const safeId = header.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
             header.id = safeId || `section-${i}`;
-
-            // Build the link for the sidebar
             const li = document.createElement('li');
             const link = document.createElement('a');
             link.href = `#${header.id}`;
             link.textContent = header.textContent;
-
-            // If it's a small header (h3), shove it to the right a bit
             if (header.tagName === 'H3') link.classList.add('indent-h3');
-
-            // Close menu on click (Mobile UX)
-            link.addEventListener('click', () => {
-                closeMenu();
-            });
-
+            link.addEventListener('click', () => { closeMenu(); });
             li.appendChild(link);
             tocList.appendChild(li);
         });
 
-        // --- MOBILE MENU LOGIC ---
         function toggleMenu() {
             const isActive = tocPanel.classList.contains('active');
-            if (isActive) closeMenu();
-            else openMenu();
+            if (isActive) closeMenu(); else openMenu();
         }
-
         function openMenu() {
             tocPanel.classList.add('active');
             backdrop.classList.add('active');
-            menuBtn.textContent = '✕'; // Change icon to close
+            menuBtn.textContent = '✕';
         }
-
         function closeMenu() {
             tocPanel.classList.remove('active');
             backdrop.classList.remove('active');
-            menuBtn.textContent = '☰'; // Change icon back to hamburger
+            menuBtn.textContent = '☰';
         }
-
-        // Event Listeners
         menuBtn.addEventListener('click', toggleMenu);
         backdrop.addEventListener('click', closeMenu);
-
     </script>
 </body>
 </html>
