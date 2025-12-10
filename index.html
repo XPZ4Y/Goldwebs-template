@@ -2,254 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Critical for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Lazy Dev Notes</title>
-    <!-- 1. THE INGREDIENTS: Import the marked.js library -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <style>
-        /* --- VISUALS (Same GitHub Dark Mode vibes) --- */
-        :root {
-            --bg-canvas: #0d1117;
-            --text-main: #c9d1d9;
-            --text-muted: #8b949e;
-            --border: #30363d;
-            --blue-link: #58a6ff;
-            --code-bg: #161b22;
-            --btn-bg: #21262d;
-            --btn-hover: #30363d;
-        }
-
-        body {
-            margin: 0;
-            background: var(--bg-canvas);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden; /* Let the separate panels scroll */
-        }
-
-        /* --- LEFT SIDE (Navigation) --- */
-        #toc-panel {
-            min-width: 250px;
-            max-width: 250px;
-            border-right: 1px solid var(--border);
-            overflow-y: auto;
-            padding: 20px;
-            background: var(--bg-canvas); /* Ensure bg is opaque for slide-over */
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-        }
-        
-        #toc-panel h3 { color: var(--text-muted); font-size: 0.9em; text-transform: uppercase; margin-top: 0; }
-        #toc-list { list-style: none; padding: 0; }
-        #toc-list a {
-            display: block;
-            text-decoration: none;
-            color: var(--text-main);
-            padding: 8px 10px; /* Larger touch target */
-            font-size: 0.9em;
-            border-radius: 4px;
-            margin-bottom: 2px;
-        }
-        #toc-list a:hover { background: var(--code-bg); color: var(--blue-link); }
-        .indent-h3 { margin-left: 15px; font-size: 0.85em; opacity: 0.8; }
-
-        /* --- RIGHT SIDE (Content) --- */
-        #render-target {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 40px 80px;
-            max-width: 1000px;
-            scroll-behavior: smooth;
-        }
-
-        /* --- MOBILE ELEMENTS (Hidden on Desktop) --- */
-        #mobile-menu-btn { display: none; }
-        #menu-backdrop { display: none; }
-
-        /* --- MARKDOWN STYLING --- */
-        h1, h2 { border-bottom: 1px solid var(--border); padding-bottom: 0.3em; margin-top: 1.5em; }
-        h1:first-child { margin-top: 0; }
-        a { color: var(--blue-link); text-decoration: none; }
-        blockquote { border-left: 4px solid var(--border); padding-left: 1em; color: var(--text-muted); }
-        pre { background: var(--code-bg); padding: 15px; border-radius: 6px; overflow-x: auto; }
-        code { font-family: monospace; background: rgba(110,118,129,0.4); padding: 3px 6px; border-radius: 4px; }
-        pre code { background: transparent; padding: 0; }
-        img { max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 6px; }
-
-        /* Scrollbar aesthetics */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
-        
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 768px) {
-            /* 1. Reset Body Layout */
-            body { 
-                flex-direction: column; 
-                overflow: hidden; /* Prevent body scroll, only target scrolls */
-            }
-
-            /* 2. Slide-out Navigation */
-            #toc-panel {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                width: 80%; /* Takes up 80% of screen width */
-                max-width: 300px;
-                transform: translateX(-100%); /* Hidden by default */
-                border-right: 1px solid var(--border);
-                box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            }
-            
-            #toc-panel.active {
-                transform: translateX(0); /* Slide in */
-            }
-
-            /* 3. Main Content Full Width */
-            #render-target { 
-                padding: 20px; 
-                width: 100%;
-                font-size: 16px; /* Prevent zooming on input focus */
-            }
-
-            /* 4. The Hamburger Button */
-            #mobile-menu-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background: var(--blue-link);
-                color: white;
-                border: none;
-                font-size: 24px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                z-index: 1001;
-                cursor: pointer;
-                transition: transform 0.2s;
-            }
-            #mobile-menu-btn:active { transform: scale(0.95); }
-
-            /* 5. Backdrop Overlay */
-            #menu-backdrop {
-                display: block;
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.6);
-                z-index: 999;
-                opacity: 0;
-                pointer-events: none; /* Let clicks pass through when hidden */
-                transition: opacity 0.3s;
-            }
-            #menu-backdrop.active {
-                opacity: 1;
-                pointer-events: auto;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="./scripts/book.css">
 </head>
 <body>
 
-    <!-- MOBILE UI ELEMENTS -->
     <div id="menu-backdrop"></div>
     <button id="mobile-menu-btn">☰</button>
 
-    <!-- NAV PANEL -->
     <nav id="toc-panel">
+        <div id="home-btn">🏠 Home</div>
         <h3>Contents</h3>
         <ul id="toc-list"></ul>
     </nav>
 
-    <!-- CONTENT PANEL -->
     <main id="render-target">
-        <!-- JS will dump the cooked HTML here -->
-    </main>
+        </main>
 
-    <!-- 
-      2. THE RAW MEAT: Write your content inside this script tag.
-    -->
-<script type="text/markdown" id="raw-markdown">
-# Directory:
-## [Biology Notes](books/biology.html)
-## [Electronics Notes](books/electronics.html)
-## [UHV Notes](books/UHV.html)
+    <script type="text/markdown" id="home-markdown">
+# Directory
+## [Biology Notes](books/biology.md)
+## [Electronics Notes](books/electronics.md)
+## [UHV Notes](books/UHV.md)
 </script>
 
-    <script>
-        // --- 3. THE CHEF (Logic) ---
-        
-        // Grab the raw ingredients
-        const rawText = document.getElementById('raw-markdown').textContent;
-        const target = document.getElementById('render-target');
-        const tocList = document.getElementById('toc-list');
-        const tocPanel = document.getElementById('toc-panel');
-        const backdrop = document.getElementById('menu-backdrop');
-        const menuBtn = document.getElementById('mobile-menu-btn');
-
-        // Cook the markdown into HTML using the library
-        target.innerHTML = marked.parse(rawText);
-
-        // --- THE SPICY SAUCE (Auto-ToC) ---
-        // Now that HTML exists, let's hunt for headers
-        const headers = target.querySelectorAll('h1, h2, h3');
-
-        headers.forEach((header, i) => {
-            // Give the header a nametag (ID) so we can jump to it
-            const safeId = header.textContent
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-') 
-                .replace(/(^-|-$)/g, '');
-            
-            header.id = safeId || `section-${i}`;
-
-            // Build the link for the sidebar
-            const li = document.createElement('li');
-            const link = document.createElement('a');
-            link.href = `#${header.id}`;
-            link.textContent = header.textContent;
-
-            // If it's a small header (h3), shove it to the right a bit
-            if (header.tagName === 'H3') link.classList.add('indent-h3');
-
-            // Close menu on click (Mobile UX)
-            link.addEventListener('click', () => {
-                closeMenu();
-            });
-
-            li.appendChild(link);
-            tocList.appendChild(li);
-        });
-
-        // --- MOBILE MENU LOGIC ---
-        function toggleMenu() {
-            const isActive = tocPanel.classList.contains('active');
-            if (isActive) closeMenu();
-            else openMenu();
-        }
-
-        function openMenu() {
-            tocPanel.classList.add('active');
-            backdrop.classList.add('active');
-            menuBtn.textContent = '✕'; // Change icon to close
-        }
-
-        function closeMenu() {
-            tocPanel.classList.remove('active');
-            backdrop.classList.remove('active');
-            menuBtn.textContent = '☰'; // Change icon back to hamburger
-        }
-
-        // Event Listeners
-        menuBtn.addEventListener('click', toggleMenu);
-        backdrop.addEventListener('click', closeMenu);
-
-    </script>
+    <script src="./scripts/book.js"></script>
+      
 </body>
 </html>

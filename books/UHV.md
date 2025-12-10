@@ -1,24 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UHV: Universal Human Values</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="../scripts/book.css">
-</head>
-<body>
-    <div id="menu-backdrop"></div>
-    <button id="mobile-menu-btn">☰</button>
-    
-    <nav id="toc-panel">
-        <h3>UHV Module Index</h3>
-        <ul id="toc-list"></ul>
-    </nav>
-    
-    <main id="render-target"></main>
-    
-    <script type="text/markdown" id="raw-markdown">
 # Unit 1: Introduction to Value Education
 > **Core Objective:** Moving from "Animal Consciousness" (living only for physical facility) to "Human Consciousness" (living with right understanding, relationship, and physical facility).
 
@@ -187,7 +166,3 @@ How to move from the current chaotic state to the Universal Human Order?
 3.  ↓ **Competence** (to live)
 4.  ↓ **Ethical Conduct** (Behavior with Humans + Work with Nature)
 5.  ↓ **Universal Human Goal** (Happiness, Prosperity, Fearlessness, Co-existence).
-    </script>
-<script type="text/javascript" src="../scripts/book.js"></script>
-</body>
-</html>
