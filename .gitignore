@@ -1,2 +1,4 @@
 # ignore the bat files
 *.bat
+
+*ppts/

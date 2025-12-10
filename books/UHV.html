@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UHV: Universal Human Values</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-canvas: #121212;
+            --text-main: #ffffff;
+            --text-muted: #b0b0b0;
+            --border: #333333;
+            --hover-bg: #2a2a2a;
+        }
+        body { 
+            margin: 0; 
+            background: var(--bg-canvas); 
+            color: var(--text-main); 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+        
+        /* Layout */
+        #toc-panel { 
+            min-width: 250px; 
+            max-width: 250px; 
+            border-right: 1px solid var(--border); 
+            overflow-y: auto; 
+            padding: 20px; 
+            background: var(--bg-canvas); 
+            z-index: 1000; 
+            flex-shrink: 0; 
+        }
+        #render-target { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding: 40px 80px; 
+            max-width: 1000px; 
+            scroll-behavior: smooth; 
+        }
+        
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 { color: var(--text-main); margin-top: 1.5em; }
+        h1 { border-bottom: 1px solid var(--border); padding-bottom: 0.3em; margin-top: 0; }
+        h2 { border-bottom: 1px solid var(--border); padding-bottom: 0.3em; margin-top: 2em; }
+        h3 { font-weight: 600; font-size: 1.2em; }
+        h4 { text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.05em; margin-top: 1.5em;}
+        p { line-height: 1.6; margin-bottom: 1em; color: var(--text-main); }
+        strong { font-weight: 700; color: var(--text-main); }
+        a { color: var(--text-main); text-decoration: underline; }
+        
+        /* Lists & Quotes */
+        ul { padding-left: 20px; }
+        li { margin-bottom: 0.5em; }
+        blockquote { 
+            border-left: 3px solid var(--text-main); 
+            padding: 10px 15px; 
+            margin: 15px 0; 
+            color: var(--text-muted); 
+            font-style: italic;
+        }
+        
+        /* Code & Tables */
+        pre { 
+            background: #1e1e1e; 
+            padding: 15px; 
+            border-radius: 4px; 
+            overflow-x: auto; 
+            border: 1px solid var(--border); 
+        }
+        code { 
+            font-family: monospace; 
+            background: #333; 
+            padding: 2px 5px; 
+            border-radius: 3px; 
+            font-size: 0.9em; 
+            color: var(--text-main); 
+        }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; border: 1px solid var(--border); }
+        th, td { border: 1px solid var(--border); padding: 10px; text-align: left; }
+        th { background: #1e1e1e; font-weight: bold; }
+        
+        /* TOC Styles */
+        #toc-panel h3 { 
+            color: var(--text-main); 
+            font-size: 1em; 
+            text-transform: uppercase; 
+            margin-top: 0; 
+            letter-spacing: 1px; 
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        #toc-list { list-style: none; padding: 0; }
+        #toc-list a { 
+            display: block; 
+            text-decoration: none; 
+            color: var(--text-muted); 
+            padding: 6px 10px; 
+            font-size: 0.9em; 
+            border-radius: 4px; 
+            margin-bottom: 2px; 
+            transition: color 0.2s; 
+        }
+        #toc-list a:hover { color: var(--text-main); text-decoration: none; background-color: var(--hover-bg); }
+        #toc-list a.active-link { color: var(--text-main); font-weight: bold; }
+        .indent-h3 { margin-left: 15px; font-size: 0.85em; opacity: 0.9; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-canvas); }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 5px; border: 2px solid var(--bg-canvas); }
+        ::-webkit-scrollbar-thumb:hover { background: #666; }
+
+        /* Mobile */
+        #mobile-menu-btn { display: none; }
+        #menu-backdrop { display: none; }
+        
+        @media (max-width: 768px) {
+            body { flex-direction: column; overflow: hidden; }
+            #toc-panel { position: fixed; top: 0; left: 0; height: 100vh; width: 80%; max-width: 300px; transform: translateX(-100%); box-shadow: 0 0 20px rgba(0,0,0,0.8); background: #000; }
+            #toc-panel.active { transform: translateX(0); }
+            #render-target { padding: 20px; width: 100%; box-sizing: border-box; }
+            #mobile-menu-btn { display: flex; align-items: center; justify-content: center; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: #333; color: white; border: 1px solid #555; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1001; cursor: pointer; }
+            #menu-backdrop { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+            #menu-backdrop.active { opacity: 1; pointer-events: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div id="menu-backdrop"></div>
+    <button id="mobile-menu-btn">☰</button>
+    
+    <nav id="toc-panel">
+        <h3>UHV Module Index</h3>
+        <ul id="toc-list"></ul>
+    </nav>
+    
+    <main id="render-target"></main>
+
+    <script type="text/markdown" id="raw-markdown">
+# Unit 1: Introduction to Value Education
+> **Core Objective:** Moving from "Animal Consciousness" (living only for physical facility) to "Human Consciousness" (living with right understanding, relationship, and physical facility).
+
+### 1. Value vs. Skill
+Education often confuses *means* with *ends*.
+* **Value Education (VE):** Deals with **"What to do"**. It identifies the *Goal* (Human Aspirations).
+* **Skill Development (SD):** Deals with **"How to do"**. It provides the *Technique*.
+* **The Crisis:** Modern education is ~95% Skill, <5% Value. Result = "Intelligent" people creating complex problems (pollution, war, exploitation).
+
+### 2. Guidelines for Value Education
+For VE to be effective, it must be:
+1.  **Universal:** Applicable to all (time, space, individual). NOT sectarian.
+2.  **Rational:** Based on reason/logic. NOT blind faith/dogma.
+3.  **Natural & Verifiable:** Naturally acceptable to the self and experientially valid.
+4.  **All-encompassing:** Covers all dimensions (Thought, Behavior, Work, Realization) and levels (Individual, Family, Society, Nature).
+5.  **Harmony-oriented:** Must lead to harmony, not conflict.
+
+### 3. The Process: Self-Exploration
+The methodology is **not** preaching. It is a dialogue between "What I am" (current competence) and "What I really want to be" (Natural Acceptance).
+
+* **Natural Acceptance:** The innate, invariant faculty in every human (e.g., everyone prefers respect over disrespect).
+* **Mechanism:**
+    1.  **Proposal:** Treat content as a proposal. Do not assume it is true/false.
+    2.  **Verify:** Check against your Natural Acceptance.
+    3.  **Live:**
+        * Behavior with humans → leads to Mutual Happiness?
+        * Work with nature → leads to Mutual Prosperity?
+    * **Result:** Right Understanding.
+
+### 4. Basic Human Aspirations
+Every human desires two things continuously:
+1.  **Happiness (Sukha):** To be in a state of Harmony.
+2.  **Prosperity (Samridhi):** The feeling of having *more than required* Physical Facility.
+    * *Note:* Wealth ≠ Prosperity. A wealthy person without the right assessment of needs feels "deprived" and is not prosperous.
+
+---
+
+# Unit 2: Harmony in the Human Being
+> **Core Axiom:** Human Being = Co-existence of **Self (I)** + **Body**.
+
+### 1. Distinguishing Self (I) vs. Body
+The confusion of "I = Body" is the root of most personal conflict.
+
+| Feature | Self (I) | Body |
+| :--- | :--- | :--- |
+| **Nature** | Consciousness (Sentience) | Material (Physio-chemical) |
+| **Needs** | Trust, Respect, Happiness | Food, Shelter, Clothing |
+| **Timeframe** | Continuous | Temporary |
+| **Quantity** | Qualitative (Feeling) | Quantitative (Limited) |
+| **Activity** | Desire, Thought, Expectation | Breathing, Heartbeat, Eating |
+| **Response** | Knowing, Assuming, Recognizing, Fulfilling | Recognizing, Fulfilling |
+
+### 2. The Interaction
+* **Information Flow:** Body → Sensations → Self.
+* **Instruction Flow:** Self → Instructions → Body.
+* The Self is the **Seer, Doer, and Enjoyer**. The Body is merely an **Instrument**.
+
+### 3. Harmony in Self (I)
+Harmony in 'I' implies a regulated flow of **Imagination**.
+* **Imagination** = Desire + Thought + Expectation.
+* **The Problem:** When Imagination is driven by:
+    1.  *Preconditioning* (Assumptions without knowing).
+    2.  *Sensation* (Pleasure seeking from body).
+* **The Solution:** Align Imagination with **Natural Acceptance**.
+
+### 4. Harmony with Body
+* **Sanyam (Self-regulation):** The feeling of responsibility in the Self to Nurture, Protect, and Rightly Utilize the Body.
+* **Swasthya (Health):** The condition where the body is fit to act according to the Self.
+    * *Equation:* Sanyam in Self → Swasthya in Body.
+
+---
+
+# Unit 3: Harmony in Family & Society
+> **Core Axiom:** Relationship is between **Self and Self** (I-I), not Body-Body.
+
+### 1. Foundations of Relationship
+Relationships are not "created"; they already exist. We only need to **recognize** and **fulfill** them.
+
+### 2. The Nine Feelings (Values)
+Values are feelings in the Self, for the Self.
+
+1.  **Trust (Vishwas) - Foundational Value:**
+    * Definition: The assurance that "the other wants to make me happy and prosperous."
+    * **The Critical Distinction:**
+        * **Intention:** What one *wants* to do (Natural Acceptance).
+        * **Competence:** What one is *able* to do.
+    * *The Trap:* We judge **ourselves by our Intention** (I am good), but judge **others by their Competence** (They are bad).
+    * *Solution:* Trust the intention (it is same for all); improve the competence (yours and theirs).
+
+2.  **Respect (Samman):**
+    * Definition: **Right Evaluation**.
+    * **Disrespect:** Over-evaluation (flattery), Under-evaluation (insult), or Otherwise-evaluation.
+    * **Differentiation is NOT Respect:** Discriminating based on Body (age, gender, race), Physical Facility (wealth), or Beliefs is lack of respect.
+    * *True Respect:* Seeing that "The other is **similar** to me in Purpose (Happiness) and Potential."
+
+3.  **Affection:** Feeling of acceptance.
+4.  **Care:** Responsibility for the Body of the relative.
+5.  **Guidance:** Responsibility for the Right Understanding of the relative.
+6.  **Reverence:** Acceptance of excellence in others.
+7.  **Glory:** Value for those who have made efforts for excellence.
+8.  **Gratitude:** Acceptance of help received.
+9.  **Love (Prem) - Complete Value:** The feeling of being related to **all**.
+
+### 3. Harmony in Society
+Goal: **Universal Human Order** (Undivided Society).
+* **Five Dimensions of Society:**
+    1.  **Education - Sanskar:** → Right Understanding.
+    2.  **Health - Sanyam:** → Prosperity.
+    3.  **Production - Work:** → Prosperity (Cyclic/Eco-friendly).
+    4.  **Justice - Preservation:** → Fearlessness (Trust) & Co-existence.
+    5.  **Exchange - Storage:** → Mutual Prosperity.
+
+---
+
+# Unit 4: Harmony in Nature & Existence
+> **Core Axiom:** Existence = **Co-existence**.
+
+### 1. The Four Orders of Nature
+
+| Order | Units | Activity | Characteristic |
+| :--- | :--- | :--- | :--- |
+| **Physical** | Soil, Air, Water, Metals | Composition / Decomposition | Constitution (based on atom) |
+| **Bio** | Plants, Trees | + Respiration | + Growth / Pulsation |
+| **Animal** | Animals, Birds | + Selection (Will to live) | + Cruelty / Non-cruelty |
+| **Human** | Human Beings | + **Choice** (Instruction) | **Perseverance, Bravery, Generosity** |
+
+* **Mutual Fulfillment:**
+    * Physical ↔ Bio (Soil nurtures plants, plants prevent erosion).
+    * Bio ↔ Animal (Plants feed animals, animals spread seeds).
+    * **The Anomaly:** Humans currently *exploit* the other three. We must move to *Enrich* them.
+
+### 2. Reality: Units in Space
+* **Units (Nature):** Limited, Active, Energized, Recognizes/Fulfills relationship.
+* **Space (Void/Brahma):** Unlimited, No-Activity, All-pervading, Transparent.
+* **Submergence:** All units are submerged in Space. Space is the *energy source* and *organizing connector*.
+
+### 3. Holistic Perception
+Existence is not a chaos; it is a **Co-existence**.
+* **Material Units:** Temporary, recognize & fulfill (Deterministic conduct).
+* **Conscious Units (Self):** Continuous, Know/Assume/Recognize/Fulfill.
+    * *Animal:* Assumes without knowing.
+    * *Human:* Can **Know** (realize co-existence).
+
+---
+
+# Unit 5: Professional Ethics
+> **Core Axiom:** Ethics is the natural expression of Right Understanding, not a set of imposed rules.
+
+### 1. Definitiveness of Ethical Conduct
+Ethical conduct is autonomous (Swa-rajya), not dependent on external enforcement. It comprises:
+1.  **Values (Mulya):** In relationships (Family/Society).
+2.  **Policy (Niti):** For protecting/enriching resources (Nature).
+3.  **Character (Charitra):**
+    * Chastity in conjugal relationship.
+    * Rightful production/wealth (No exploitation).
+    * Compassionate behavior.
+
+### 2. Transition Strategy
+How to move from the current chaotic state to the Universal Human Order?
+1.  **Individual Level:** Self-exploration, achieving Right Understanding.
+2.  **Societal Level:** Promoting Value Education, creating models of holistic living (family labs), influential policy making.
+
+### 3. Summary of the Path
+1.  **Right Understanding** (in Self)
+2.  ↓ **Right Feeling/Thought** (in Self)
+3.  ↓ **Competence** (to live)
+4.  ↓ **Ethical Conduct** (Behavior with Humans + Work with Nature)
+5.  ↓ **Universal Human Goal** (Happiness, Prosperity, Fearlessness, Co-existence).
+    </script>
+
+    <script>
+        const rawText = document.getElementById('raw-markdown').textContent;
+        const target = document.getElementById('render-target');
+        const tocList = document.getElementById('toc-list');
+        const tocPanel = document.getElementById('toc-panel');
+        const backdrop = document.getElementById('menu-backdrop');
+        const menuBtn = document.getElementById('mobile-menu-btn');
+
+        // Configure Marked options if needed
+        marked.setOptions({
+            headerIds: false, // We handle IDs manually
+        });
+
+        target.innerHTML = marked.parse(rawText);
+
+        // Generate TOC and Anchor Links
+        const headers = target.querySelectorAll('h1, h2, h3');
+        headers.forEach((header, i) => {
+            // Create safe ID
+            const safeId = header.textContent
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+            
+            header.id = safeId || `section-${i}`;
+            
+            // TOC Item
+            const li = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = `#${header.id}`;
+            link.textContent = header.textContent;
+            
+            // Indent based on hierarchy
+            if (header.tagName === 'H2') link.style.paddingLeft = '15px';
+            if (header.tagName === 'H3') link.classList.add('indent-h3');
+            
+            link.addEventListener('click', (e) => {
+                // Smooth scroll handling
+                if (window.innerWidth <= 768) closeMenu();
+                
+                // Active state handling
+                document.querySelectorAll('#toc-list a').forEach(a => a.classList.remove('active-link'));
+                link.classList.add('active-link');
+            });
+            
+            li.appendChild(link);
+            tocList.appendChild(li);
+        });
+
+        // Intersection Observer for Active TOC scrolling
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    document.querySelectorAll('#toc-list a').forEach(a => {
+                        a.classList.toggle('active-link', a.getAttribute('href') === `#${id}`);
+                    });
+                }
+            });
+        }, { rootMargin: '-10% 0px -80% 0px' }); // Trigger when header is near top
+
+        headers.forEach(h => observer.observe(h));
+
+        // Mobile Menu Logic
+        function toggleMenu() {
+            const isActive = tocPanel.classList.contains('active');
+            if (isActive) closeMenu(); else openMenu();
+        }
+        function openMenu() {
+            tocPanel.classList.add('active');
+            backdrop.classList.add('active');
+            menuBtn.textContent = '✕';
+        }
+        function closeMenu() {
+            tocPanel.classList.remove('active');
+            backdrop.classList.remove('active');
+            menuBtn.textContent = '☰';
+        }
+        menuBtn.addEventListener('click', toggleMenu);
+        backdrop.addEventListener('click', closeMenu);
+    </script>
+</body>
+</html>
