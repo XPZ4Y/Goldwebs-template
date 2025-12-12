@@ -12,37 +12,54 @@
         // --- CORE FUNCTIONS ---
 
         // 1. Render Markdown & Build ToC
-        function renderContent(markdownText) {
-            // clear old content
-            tocList.innerHTML = '';
-            
-            // Render HTML
-            target.innerHTML = marked.parse(markdownText);
-            
-            // Build ToC from Headers
-            const headers = target.querySelectorAll('h1, h2, h3');
-            headers.forEach((header, i) => {
-                const safeId = header.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `section-${i}`;
-                header.id = safeId;
+        // 1. Render Markdown & Build ToC
+function renderContent(markdownText) {
+    // Broom away the old dust
+    tocList.innerHTML = '';
+    
+    // Parse the fresh scribbles
+    target.innerHTML = marked.parse(markdownText);
+    
+    // Hunt for headers to build the map
+    const headers = target.querySelectorAll('h1, h2, h3');
+    headers.forEach((header, i) => {
+        // Create a safe ID (no spaces or weird demon runes)
+        const safeId = header.textContent.toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '') || `section-${i}`;
+        header.id = safeId;
 
-                const li = document.createElement('li');
-                const link = document.createElement('a');
-                link.href = `#${header.id}`;
-                link.textContent = header.textContent;
-                if (header.tagName === 'H3') link.classList.add('indent-h3');
-                
-                link.addEventListener('click', (e) => {
-                    // Smooth scroll is handled by CSS, just close menu on mobile
-                    if(window.innerWidth <= 768) closeMenu();
-                });
-
-                li.appendChild(link);
-                tocList.appendChild(li);
-            });
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = `#${header.id}`;
+        link.textContent = header.textContent;
+        if (header.tagName === 'H3') link.classList.add('indent-h3');
+        
+        // --- THE FIX IS HERE ---
+        link.addEventListener('click', (e) => {
+            // STOP! Don't let the browser run wild and forget the file
+            e.preventDefault();
             
-            // Re-attach internal link listeners for SPA feel
-            attachInternalLinks();
-        }
+            // Smoothly slide to the target like a greased pig
+            header.scrollIntoView({ behavior: 'smooth' });
+            
+            // Update the URL hash manually, keeping the current 'note' state in the pocket
+            // (Uses history.state so we don't lose the filename)
+            if (history.state) {
+                 history.pushState(history.state, '', `#${safeId}`);
+            }
+
+            // If on mobile, slap the menu shut
+            if(window.innerWidth <= 768) closeMenu();
+        });
+
+        li.appendChild(link);
+        tocList.appendChild(li);
+    });
+    
+    // Re-hook the magic portals (internal links)
+    attachInternalLinks();
+}
 
         // 2. Intercept Links to load .md files
         function attachInternalLinks() {
